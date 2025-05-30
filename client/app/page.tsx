@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -25,9 +24,18 @@ export default function KatalystHomepage() {
     try {
       const res = await axios.post("http://localhost:8000/chat", {
         question: query,
+        user_name: "Vaishnavi",
+        contact: "vaish@example.com",
+        priority: "urgent",
       })
 
-      const botMessage = { type: "bot" as const, content: res.data.answer }
+      const { answer, ticket_id } = res.data
+
+      const botResponseText = ticket_id
+        ? `${answer}\n\n🆘 Your query has been escalated. Ticket ID: ${ticket_id}`
+        : answer
+
+      const botMessage = { type: "bot" as const, content: botResponseText }
       setMessages((prev) => [...prev, botMessage])
     } catch (error) {
       const errorMessage = {
@@ -187,7 +195,7 @@ export default function KatalystHomepage() {
                         message.type === "user" ? "bg-pink-600 text-white" : "bg-pink-50 text-gray-800 border"
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm" style={{ whiteSpace: "pre-line" }}>{message.content}</p>
                     </div>
                   </div>
                 ))}
@@ -219,24 +227,25 @@ export default function KatalystHomepage() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask about our programs..."
-                  className="flex-1 resize-none border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  rows={1}
+                  placeholder="Ask me anything..."
+                  className="flex-1 resize-none rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                  rows={2}
                   disabled={isLoading}
                 />
                 <Button
                   onClick={sendQuery}
                   disabled={isLoading || !query.trim()}
-                  className="bg-pink-600 hover:bg-pink-700 text-white px-3 py-2"
+                  className="bg-pink-600 hover:bg-pink-700 text-white"
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 </Button>
               </div>
-              <div className="flex items-center justify-center mt-2">
-                <span className="text-xs text-gray-500">Powered by</span>
-                <Image src="/mastercard-logo.png" alt="Mastercard" width={40} height={24} className="ml-2" />
-              </div>
             </div>
+            {/* Mastercard Footer */}
+        <div className="flex items-center justify-center py-2 bg-gray-100 text-xs text-gray-600 border-t">
+          <span className="mr-2">Powered by</span>
+          <Image src="/mastercard-logo.png" alt="Mastercard" width={50} height={20} />
+        </div>
           </Card>
         )}
       </div>

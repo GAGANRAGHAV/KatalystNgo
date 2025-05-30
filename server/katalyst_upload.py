@@ -1,7 +1,7 @@
 # upload_katalyst_doc_structured.py
 
 from docx import Document
-from app.db import pc
+from server.app.db.db import pc
 
 # Function to group paragraphs into logical chunks
 def extract_grouped_chunks(path):
