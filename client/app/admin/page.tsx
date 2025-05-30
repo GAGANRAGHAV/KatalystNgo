@@ -30,7 +30,7 @@ export default function AdminPanel() {
 
   const fetchQueries = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/logs");
+      const res = await axios.get("https://katalystngo.onrender.com/logs");
       setQueries(res.data.logs || []);
     } catch (err) {
       console.error("Error fetching logs:", err);
@@ -68,7 +68,7 @@ export default function AdminPanel() {
       );
 
       // Delete from backend
-      await axios.delete("http://localhost:8000/log", {
+      await axios.delete("https://katalystngo.onrender.com/log", {
         params: { email: q.email, question: q.question },
       });
     } catch (error) {
@@ -289,7 +289,7 @@ export default function AdminPanel() {
 
                             // Delete from backend
                             try {
-                              await axios.delete("http://localhost:8000/log", {
+                              await axios.delete("https://katalystngo.onrender.com/log", {
                                 params: {
                                   email: q.email,
                                   question: q.question,

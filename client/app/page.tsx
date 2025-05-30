@@ -32,7 +32,7 @@ export default function KatalystHomepage() {
     setIsLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:8000/chat", {
+      const res = await axios.post("https://katalystngo.onrender.com/chat", {
         question: query,
       });
 
@@ -65,7 +65,7 @@ export default function KatalystHomepage() {
 
     try {
       // Send the email and query to the backend for logging
-      await axios.post("http://localhost:8000/log_low_score_query", {
+      await axios.post("https://katalystngo.onrender.com/log_low_score_query", {
         question: pendingQuery,
         email: userEmail.trim(),
         score: pendingScore
@@ -308,12 +308,10 @@ export default function KatalystHomepage() {
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                         <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.1s" }}
+                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce bounce-delay-1"
                         ></div>
                         <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.2s" }}
+                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce bounce-delay-2"
                         ></div>
                       </div>
                     </div>
