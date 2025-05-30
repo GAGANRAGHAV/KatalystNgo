@@ -1,6 +1,6 @@
 # search_katalyst_doc.py
 
-from app.db import pc
+from server.app.db.db import pc
 
 # Connect to the same index
 index = pc.Index("katalyst-index")
