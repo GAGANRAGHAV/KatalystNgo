@@ -5,6 +5,9 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { MessageCircle, X, Send, Search } from "lucide-react"
 import Image from "next/image"
 import axios from "axios"
@@ -14,37 +17,99 @@ export default function KatalystHomepage() {
   const [query, setQuery] = useState("")
   const [messages, setMessages] = useState<Array<{ type: "user" | "bot"; content: string }>>([])
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Dialog state
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [userEmail, setUserEmail] = useState("")
+  const [pendingQuery, setPendingQuery] = useState("")
+  const [pendingScore, setPendingScore] = useState(0)
 
   const sendQuery = async () => {
-    if (!query.trim()) return
+    if (!query.trim()) return;
 
-    const userMessage = { type: "user" as const, content: query }
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
+    const userMessage = { type: "user" as const, content: query };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
 
     try {
       const res = await axios.post("http://localhost:8000/chat", {
         question: query,
-      })
+      });
 
-      const botMessage = { type: "bot" as const, content: res.data.answer }
-      setMessages((prev) => [...prev, botMessage])
+      const botMessage = { type: "bot" as const, content: res.data.answer };
+      setMessages((prev) => [...prev, botMessage]);
+
+      const score = res.data.score;
+      const SIMILARITY_THRESHOLD = 0.75;
+
+      if (score < SIMILARITY_THRESHOLD) {
+        // Store query and score for dialog
+        setPendingQuery(query);
+        setPendingScore(score);
+        setIsDialogOpen(true);
+      }
     } catch (error) {
       const errorMessage = {
         type: "bot" as const,
         content: "Sorry, I'm having trouble connecting. Please try again later.",
-      }
-      setMessages((prev) => [...prev, errorMessage])
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     }
 
-    setQuery("")
-    setIsLoading(false)
-  }
+    setQuery("");
+    setIsLoading(false);
+  };
+
+  const handleEmailSubmit = async () => {
+    if (!userEmail.trim()) return;
+
+    try {
+      // Send the email and query to the backend for logging
+      await axios.post("http://localhost:8000/log_low_score_query", {
+        question: pendingQuery,
+        email: userEmail.trim(),
+        score: pendingScore
+      });
+
+      // Show success message in chat
+      const successMessage = {
+        type: "bot" as const,
+        content: "Thank you! We've received your email and will get back to you with a more detailed answer soon.",
+      };
+      setMessages((prev) => [...prev, successMessage]);
+    } catch (error) {
+      const errorMessage = {
+        type: "bot" as const,
+        content: "Sorry, there was an error saving your email. Please try again.",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    }
+
+    // Close dialog and reset state
+    setIsDialogOpen(false);
+    setUserEmail("");
+    setPendingQuery("");
+    setPendingScore(0);
+  };
+
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+    setUserEmail("");
+    setPendingQuery("");
+    setPendingScore(0);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       sendQuery()
+    }
+  }
+
+  const handleEmailKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleEmailSubmit()
     }
   }
 
@@ -135,6 +200,51 @@ export default function KatalystHomepage() {
           </div>
         </div>
       </main>
+
+      {/* Email Collection Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-pink-600">Need More Help?</DialogTitle>
+            <DialogDescription>
+              We couldn't find a relevant answer to your question. Please provide your email address so our team can assist you with a personalized response.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your.email@example.com"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                onKeyPress={handleEmailKeyPress}
+                className="col-span-3 focus:ring-pink-500 focus:border-pink-500"
+                autoFocus
+              />
+            </div>
+            <div className="text-sm text-gray-500 mt-2">
+              Your question: <span className="font-medium">"{pendingQuery}"</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleDialogClose}>
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              onClick={handleEmailSubmit}
+              disabled={!userEmail.trim()}
+              className="bg-pink-600 hover:bg-pink-700"
+            >
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Floating Chatbot Widget */}
       <div className="fixed bottom-6 right-6 z-50">
