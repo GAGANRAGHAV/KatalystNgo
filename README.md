@@ -1,5 +1,9 @@
 # Katalyst NGO Chatbot Platform
 
+# Video link
+
+https://screenrec.com/share/sKSjGpZwPy
+
 An AI-powered chatbot platform for [Katalyst India](https://katalystindia.org), designed to empower women by providing instant answers about the NGO's mission, programs, and services. The platform features a user-facing chatbot widget, an admin dashboard for query management, and a robust backend with vector search capabilities.
 
 ## 🌟 Features
